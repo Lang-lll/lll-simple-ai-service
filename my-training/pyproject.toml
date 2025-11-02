@@ -1,0 +1,10 @@
+[project]
+name = "lll-simple-ai-my-training"
+version = "0.1.0"
+description = "My Training"
+requires-python = ">=3.8"
+
+[project.scripts]
+
+[tool.taskipy.tasks]
+dev = "set PYTHONDONTWRITEBYTECODE=1 && python scripts/train.py"

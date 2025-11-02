@@ -13,7 +13,7 @@ class StructuredAIModel:
 
     def __init__(self, config: AIConfig = None):
         self.config = config or AIConfig()
-        self.schema_manager = SchemaManager()
+        self.schema_manager = SchemaManager(self.config)
         self.model = None
 
     def initialize(self):
@@ -27,6 +27,7 @@ class StructuredAIModel:
             torch_dtype=torch.float32,
             device_map=self.config.device,
             local_files_only=True,
+            low_cpu_mem_usage=self.config.low_cpu_mem_usage,
         )
         tokenizer = AutoTokenizer.from_pretrained(
             self.config.get_model_path(), local_files_only=True

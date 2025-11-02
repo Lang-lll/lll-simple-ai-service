@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my-service"
+version = "0.1.0"
+description = "My AI service"
+requires-python = ">=3.8"
+dependencies = [
+    "taskipy>=1.14.1",
+    "lll-simple-ai-service==0.1.0",
+]
+
+[tool.taskipy.tasks]
+dev = "set PYTHONDONTWRITEBYTECODE=1 && python scripts/start_service.py"
