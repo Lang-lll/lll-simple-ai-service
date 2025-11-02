@@ -1,6 +1,6 @@
 import os
 import torch
-from typing import Dict, Any
+from typing import Dict, List, Any
 
 
 class AIConfig:
@@ -8,11 +8,12 @@ class AIConfig:
 
     def __init__(self):
         # 模型配置
-        self.model_name = "Qwen/Qwen2-0.5B-Instruct"
+        self.model_name = "Qwen/Qwen3-4B-Instruct-2507"
         self.local_model_path = "./models/Qwen2-0.5B-Instruct"
         self.use_local_model = True
-        self.device = "cpu"
+        self.device = "auto"
         self.torch_dtype = torch.float32
+        self.low_cpu_mem_usage = True
 
         # 服务配置
         self.host = "0.0.0.0"
@@ -22,6 +23,7 @@ class AIConfig:
         self.default_max_tokens = 200
         self.default_max_new_tokens = 200
         self.default_temperature = 0.7
+        self.system_prompts: List[str] = []
 
     def update_from_dict(self, config_dict: Dict[str, Any]):
         """从字典更新配置"""

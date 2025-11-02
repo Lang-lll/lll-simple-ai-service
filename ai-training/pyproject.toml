@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lll-simple-ai-training"
+version = "0.1.0"
+description = "AI模型训练工具包"
+requires-python = ">=3.8"
+dependencies = [
+    "torch>=2.0.0",
+    "transformers>=4.51.1",
+    "peft>=0.17.1",
+    "accelerate>=1.11.0",
+    "datasets>=4.0.0",
+]
+
+[tool.setuptools]
+packages = {find = {where = ["."], include = ["lll_simple_ai_training", "lll_simple_ai_training.*"]}}

@@ -1,13 +1,16 @@
 import logging
 from typing import Dict, Any, Optional, Callable
+from ..config.default_config import AIConfig
 
 
 class SchemaManager:
     """任务Schema管理器"""
 
-    def __init__(self):
+    def __init__(self, config: AIConfig = None):
+        currentConfig = config or AIConfig()
         self.logger = logging.getLogger("SchemaManager")
         self.task_registry = {}
+        self.system_prompts = currentConfig.system_prompts
 
     def add_schema(
         self,
@@ -39,6 +42,11 @@ class SchemaManager:
 
         return output_schema
 
+    def add_system_prompt(self, text):
+        """添加固定的系统提示词前缀"""
+        system_part = "".join([f"{prompt}\n" for prompt in self.system_prompts])
+        return f"<|im_start|>system\n{system_part}<|im_end|>\n{text}"
+
     def generate_prompt(self, task_type: str, inputs: Dict) -> str:
         """根据输入数据生成智能提示词"""
         task_config = self.task_registry.get(task_type, None)
@@ -64,8 +72,12 @@ class SchemaManager:
             from jinja2 import Template
 
             formatted_inputs = format_inputs_func(inputs)
+            formatted_prompt = Template(input_template).render(**formatted_inputs)
 
-            return Template(input_template).render(**formatted_inputs)
+            # 添加系统提示词
+            full_prompt = self.add_system_prompt(formatted_prompt)
+            return full_prompt
+
         except Exception as e:
             self.logger.error(f"生成任务 {task_type} 的提示词时出错: {e}")
             return None
