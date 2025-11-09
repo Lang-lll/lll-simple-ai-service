@@ -5,5 +5,5 @@ AI 相关数据类型定义
 ## Installation
 
 ```bash
-pip lll-simple-ai-shared
+pip install lll-simple-ai-shared
 ```
