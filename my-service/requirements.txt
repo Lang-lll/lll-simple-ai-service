@@ -1,2 +1,2 @@
 taskipy>=1.14.1
-lll-simple-ai-service==0.1.0
+lll-simple-ai-service==0.1.2

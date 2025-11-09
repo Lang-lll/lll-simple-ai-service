@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lll-simple-ai-service"
-version = "0.1.0"
+version = "0.1.2"
 description = "Structured AI service with Outlines for JSON output"
 requires-python = ">=3.8"
 dependencies = [
@@ -15,5 +15,5 @@ dependencies = [
     "requests>=2.25.0",
     "huggingface-hub>=0.16.0",
     "accelerate>=1.11.0",
-    "lll-simple-ai-shared==0.1.2",
+    "lll-simple-ai-shared>=0.1.4",
 ]

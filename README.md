@@ -2,12 +2,30 @@
 
 A structured AI service with Outlines support for guaranteed JSON output.
 
-## Installation
+## 安装
 
 ```bash
-# 从源码安装
-pip install .
+pip install lll-simple-ai-service
+```
 
-# 或开发模式
-pip install -e .
+## 使用
+
+```python
+from lll_simple_ai_service import create_app, AIConfig
+
+def main():
+    config = AIConfig()
+    app, ai_engine = create_app(config)
+
+    ai_engine.add_custom_task(
+        "understand_event",
+        UnderstoodData,
+        understand_template,
+        understand_task_format_inputs,
+    )
+
+    app.run(
+        host=config.host,
+        port=config.port,
+    )
 ```
