@@ -29,7 +29,7 @@ class MotorAction(BaseAction):
 
 class BehaviorPlan(BaseModel):
     plan: List[Union[TTSAction]] = Field(..., description="行为计划序列")
-    current_situation: str = Field(
+    current_situation: str | None = Field(
         ...,
         description="根据你的行为计划，更新你对当前情境认知",
     )

@@ -12,7 +12,7 @@ class MemoryQueryType(Enum):
 
 
 class MemoryQueryPlan(BaseModel):
-    query_type: Literal["none", "long_term_cached", "long_term_fresh"] = Field(
+    query_type: MemoryQueryType = Field(
         default="none",
         description="""
 查询类型，根据当前消息判断：
@@ -35,19 +35,26 @@ class MemoryQueryPlan(BaseModel):
     )
 
 
-class UnderstoodData(BaseModel):
-    event_type: Literal["user_command", "sensor_alert", "object_detected", "other"] = (
-        Field(
-            default="other",
-            description="事件类型: user_command(用户指令)、sensor_alert(传感器预警)、object_detected(识别到特定物体或人)、other(其他)",
-        )
+"""event_type: Literal["user_command", "sensor_alert", "object_detected", "other"] = (
+    Field(
+        default="other",
+        description="事件类型: user_command(用户指令)、sensor_alert(传感器预警)、object_detected(识别到特定物体或人)、other(其他)",
     )
+)
+- `event_type`: 字符串，枚举类型。必须是以下之一：
+  - `"user_command"`: 用户指令
+  - `"sensor_alert"`: 传感器预警  
+  - `"object_detected"`: 识别到特定物体或人
+  - `"other"`: 其他类型事件"""
+
+
+class UnderstoodData(BaseModel):
     response_priority: Literal["low", "medium", "high", "critical"] = Field(
         ...,
         description="根据安全性、紧急性判断响应紧急程度: low(低)、medium(中)、high(高)、critical(极高)",
     )
     main_content: str = Field(..., description="用一句话清晰概括当前信息的核心内容")
-    current_situation: str = Field(
+    current_situation: str | None = Field(
         ...,
         description="综合当前信息与历史上下文，生成对整体情境的连贯理解。形成完整的情境认知",
     )
@@ -58,7 +65,7 @@ class UnderstoodData(BaseModel):
     importance_score: int = Field(
         default=0, description="当前事件的重要程度分数(0-100)"
     )
-    memory_query_plan: MemoryQueryPlan = Field(
+    memory_query_plan: MemoryQueryPlan | None = Field(
         ..., description="制定从长期记忆中查询相关信息的计划"
     )
 
@@ -95,12 +102,6 @@ understand_output_json_template = PromptTemplate(
 你必须输出一个JSON对象，包含以下字段：
 
 ## 一级字段说明：
-- `event_type`: 字符串，枚举类型。必须是以下之一：
-  - `"user_command"`: 用户指令
-  - `"sensor_alert"`: 传感器预警  
-  - `"object_detected"`: 识别到特定物体或人
-  - `"other"`: 其他类型事件
-
 - `response_priority`: 字符串，枚举类型。根据安全性、紧急性判断响应紧急程度，必须是：
   - `"low"`: 低优先级
   - `"medium"`: 中优先级  

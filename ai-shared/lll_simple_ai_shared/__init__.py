@@ -1,6 +1,7 @@
 from .data_models.understand_models import (
     UnderstoodData,
     MemoryQueryType,
+    MemoryQueryPlan,
     understand_template,
     understand_system_template,
     understand_output_json_template,
@@ -36,10 +37,11 @@ from .utils.extract import (
 )
 
 
-__version__ = "0.1.4"
+__version__ = "0.1.6"
 __all__ = [
     "UnderstoodData",
     "MemoryQueryType",
+    "MemoryQueryPlan",
     "RecallResultsModels",
     "BehaviorPlan",
     "EpisodicMemoriesGenerateModels",
