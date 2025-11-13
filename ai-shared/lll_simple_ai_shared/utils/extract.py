@@ -21,7 +21,9 @@ def safe_event_to_string(event):
 
         # 获取event_entity
         event_entity = understood_data.get("event_entity", None)
-        if (
+        if event_entity == "me":
+            event_entity = "你"
+        elif (
             event_entity is None
             or not isinstance(event_entity, str)
             or not event_entity.strip()

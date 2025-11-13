@@ -5,23 +5,20 @@ from ..utils.extract import extract_events_string, default_extract_strings
 
 
 class BaseAction(BaseModel):
-    type: Literal["tts", "motor"] = Field(..., description="计划类型")
+    type: Literal["tts", "motion", "wait"] = Field(..., description="计划类型")
     action: str = Field(..., description="具体动作名称")
 
 
 class TTSAction(BaseAction):
     type: str = "tts"
-    action: Literal["speak", "pause", "emphasize"] = Field(
-        ..., description="语音动作类型：speak(说话)、pause(暂停)、emphasize(强调)"
-    )
     data: str = Field(..., description="要说的具体文本内容")
     emotion: str = "neutral"
     speed: float = Field(default=1.0, description="语速0.5-2.0")
 
 
 # TODO: 完善类型
-class MotorAction(BaseAction):
-    type: Literal["motor"] = "motor"
+class MotionAction(BaseAction):
+    type: Literal["motion"] = "motion"
     action: Literal["move", "release"] = Field(...)
     duration: float = Field(default=1.0, description="动作持续时间(秒)")
     speed: float = Field(default=1.0, description="运动速度倍数")
@@ -74,7 +71,6 @@ behavior_output_json_template = PromptTemplate(
   ## 根据type选择对应字段：
 
   ### 当 type = "tts" 时，包含：
-  - `action`: 字符串，必须是：`"speak"`(说话)、`"pause"`(暂停)、`"emphasize"`(强调)
   - `data`: 字符串，要说的具体文本
   - `emotion`: 字符串，情感类型，默认"neutral"
   - `speed`: 数字0.5-2.0，语速，默认1.0
@@ -87,15 +83,7 @@ behavior_output_json_template = PromptTemplate(
   "plan": [
     {
       "type": "tts",
-      "action": "speak",
       "data": "我注意到您刚刚进入了客厅",
-      "emotion": "neutral",
-      "speed": 1.0
-    },
-    {
-      "type": "tts", 
-      "action": "pause",
-      "data": "短暂停顿等待用户反应",
       "emotion": "neutral",
       "speed": 1.0
     }

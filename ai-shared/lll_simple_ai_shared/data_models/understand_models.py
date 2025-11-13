@@ -73,8 +73,8 @@ class UnderstoodData(BaseModel):
 understand_system_template = """下面是当前的信息，请根据你的角色将杂乱的多模态信息整理成一条结构化的“工作记忆”：
 
 你可能会收到来自以下来源的原始信息：
-- [ASR]： 自动语音识别文本，可能包含错误或歧义。
-- [TEXT]： 文本信息，但可能有错别字。
+- [asr]： 自动语音识别文本，可能包含错误或歧义。
+- [text]： 文本信息，但可能有错别字。
 
 【需要你理解的信息】
 [{{understand_event_type}}]{{understand_event}}
@@ -104,7 +104,7 @@ understand_output_json_template = PromptTemplate(
 ## 一级字段说明：
 - `response_priority`: 字符串，枚举类型。根据安全性、紧急性判断响应紧急程度，必须是：
   - `"low"`: 低优先级
-  - `"medium"`: 中优先级  
+  - `"medium"`: 中优先级
   - `"high"`: 高优先级
   - `"critical"`: 极高优先级
 
