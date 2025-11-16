@@ -1,17 +1,16 @@
 from pydantic import BaseModel, Field
-from typing import List, Literal, Union
+from typing import List, Literal, Union, Any
 from ..utils.prompt_template import PromptTemplate
 from ..utils.extract import extract_events_string, default_extract_strings
 
 
 class BaseAction(BaseModel):
     type: Literal["tts", "motion", "wait"] = Field(..., description="计划类型")
-    action: str = Field(..., description="具体动作名称")
 
 
 class TTSAction(BaseAction):
     type: str = "tts"
-    data: str = Field(..., description="要说的具体文本内容")
+    data: str = Field(default="", description="要说的具体文本内容")
     emotion: str = "neutral"
     speed: float = Field(default=1.0, description="语速0.5-2.0")
 
@@ -25,9 +24,11 @@ class MotionAction(BaseAction):
 
 
 class BehaviorPlan(BaseModel):
-    plan: List[Union[TTSAction]] = Field(..., description="行为计划序列")
-    current_situation: str | None = Field(
-        ...,
+    plan: List[Union[TTSAction]] = Field(
+        default_factory=list, description="行为计划序列"
+    )
+    current_situation: str | Any = Field(
+        default=None,
         description="根据你的行为计划，更新你对当前情境认知",
     )
 
@@ -95,14 +96,18 @@ behavior_output_json_template = PromptTemplate(
 
 
 def behavior_task_format_inputs(inputs):
+    episodic_memories_text = inputs.get("episodic_memories_text", None)
+
+    if not episodic_memories_text:
+        episodic_memories = default_extract_strings(
+            inputs.get("episodic_memories", []), "content"
+        )
+
     return {
         "current_situation": inputs.get("current_situation", "未知"),
         "recent_events": extract_events_string(inputs.get("recent_events", [])),
         # TODO: 增加时间
-        "episodic_memories": inputs.get(
-            "episodic_memories_text",
-            default_extract_strings(inputs.get("episodic_memories", []), "content"),
-        ),
+        "episodic_memories": episodic_memories,
         "active_goals": default_extract_strings(
             inputs.get("active_goals", []), "description"
         ),

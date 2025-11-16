@@ -1,6 +1,5 @@
 from .understand_models import (
     UnderstoodData,
-    MemoryQueryType,
     MemoryQueryPlan,
     understand_template,
     understand_system_template,
@@ -33,7 +32,6 @@ from .episodic_memories_models import (
 
 __all__ = [
     "UnderstoodData",
-    "MemoryQueryType",
     "MemoryQueryPlan",
     "RecallResultsModels",
     "BehaviorPlan",

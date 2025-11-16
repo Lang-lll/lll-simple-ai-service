@@ -1,6 +1,7 @@
 MODALITY_TYPES = {
     "asr": "语音",  # 语音识别输入
     "tts": "语音",  # 语音输出
+    "text": "文本",
     "motor": "动作",
     "vision": "图像",
 }

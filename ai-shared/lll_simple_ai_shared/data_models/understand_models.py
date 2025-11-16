@@ -1,30 +1,32 @@
 from pydantic import BaseModel, Field
-from enum import Enum
 from typing import Literal, List
 from ..utils.prompt_template import PromptTemplate
 from ..utils.extract import extract_events_string, default_extract_strings
 
 
-class MemoryQueryType(Enum):
-    NONE = "none"
-    LONG_TERM_CACHED = "long_term_cached"
-    LONG_TERM_FRESH = "long_term_fresh"
-
-
 class MemoryQueryPlan(BaseModel):
-    query_type: MemoryQueryType = Field(
+    query_type: Literal["none", "long_term_cached", "long_term_fresh"] = Field(
         default="none",
         description="""
 查询类型，根据当前消息判断：
 - none: 不查询任何记忆
-- long_term_cached: 需要长期记忆的相关信息
-- long_term_fresh: 需要长期记忆的相关信息，要求最新信息或信息可能已变化
+- long_term_cached: 需要缓存的长期记忆的相关信息，复用之前查询过的长期记忆
+- long_term_fresh: 需要从长期记忆中重新查询相关信息，要求最新信息或信息可能已变化
+""",
+    )
+
+    query_strategy: Literal["semantic", "keyword"] = Field(
+        default="semantic",
+        description="""
+查询策略，根据当前消息判断：
+- semantic: 语义搜索，基于情境自动联想（**忽略query_triggers**）
+- keyword: 关键词搜索，严格使用query_triggers精确匹配
 """,
     )
 
     query_triggers: List[str] = Field(
         default_factory=list,
-        description="用于搜索记忆的关键词列表，应该是名词或核心概念",
+        description="数组，包含字符串。用于搜索记忆的关键词列表，可以添加更多同义词、相关的联想词。**仅当query_strategy为'keyword'时有效**",
     )
 
     time_range: List[int] = Field(
@@ -50,7 +52,7 @@ class MemoryQueryPlan(BaseModel):
 
 class UnderstoodData(BaseModel):
     response_priority: Literal["low", "medium", "high", "critical"] = Field(
-        ...,
+        default="low",
         description="根据安全性、紧急性判断响应紧急程度: low(低)、medium(中)、high(高)、critical(极高)",
     )
     main_content: str = Field(..., description="用一句话清晰概括当前信息的核心内容")
@@ -66,7 +68,7 @@ class UnderstoodData(BaseModel):
         default=0, description="当前事件的重要程度分数(0-100)"
     )
     memory_query_plan: MemoryQueryPlan | None = Field(
-        ..., description="制定从长期记忆中查询相关信息的计划"
+        default=None, description="制定从长期记忆中查询相关信息的计划"
     )
 
 
@@ -123,10 +125,14 @@ understand_output_json_template = PromptTemplate(
 ## memory_query_plan 子对象字段说明：
 - `query_type`: 字符串，枚举类型。必须是：
   - `"none"`: 不查询任何记忆
-  - `"long_term_cached"`: 需要长期记忆的相关信息
-  - `"long_term_fresh"`: 需要长期记忆的相关信息，要求最新信息或信息可能已变化
+  - `"long_term_cached"`: 需要缓存的长期记忆的相关信息，复用之前查询过的长期记忆
+  - `"long_term_fresh"`: 需要从长期记忆中重新查询相关信息，要求最新信息或信息可能已变化
 
-- `query_triggers`: 数组，包含字符串。用于搜索记忆的关键词列表，应该是名词或核心概念。
+- `query_strategy`: 字符串，枚举类型。必须是：
+  - `"semantic"`: 语义搜索，基于情境自动联想（**忽略query_triggers**）
+  - `"keyword"`: 关键词搜索，严格使用query_triggers精确匹配
+
+- `query_triggers`: 数组，包含字符串。用于搜索记忆的关键词列表，可以添加更多同义词、相关的联想词。**仅当query_strategy为'keyword'时有效**
 
 - `time_range`: 数组，包含两个整数。查询时间范围[起始天数, 结束天数]，如[0, 7]表示最近7天。
 
@@ -137,7 +143,6 @@ understand_output_json_template = PromptTemplate(
 {examples}""",
     variables={
         "examples": """{
-  "event_type": "user_command",
   "response_priority": "medium", 
   "main_content": "用户要求打开客厅的灯光",
   "current_situation": "用户在晚上进入客厅后发出了开灯指令，表明需要照明",
@@ -158,7 +163,7 @@ understand_output_json_template = PromptTemplate(
 def understand_task_format_inputs(inputs):
     return {
         "understand_event_type": inputs.get("understand_event", {}).get("type", "未知"),
-        "understand_event": inputs.get("understand_event", {}).get("text", "无"),
+        "understand_event": inputs.get("understand_event", {}).get("data", "无"),
         "recent_events": extract_events_string(inputs.get("recent_events", [])),
         "active_goals": default_extract_strings(
             inputs.get("active_goals", []), "description"

@@ -5,11 +5,11 @@ from ..utils.extract import extract_events_string, default_extract_strings
 
 class RecallResultsModels(BaseModel):
     recalled_episode: str = Field(
-        ...,
+        default="",
         description="从历史记忆中提取的与当前情况最相关的具体经验或模式",
     )
     current_situation: str = Field(
-        ...,
+        default="",
         description="结合历史上下文后对当前情境的深化理解",
     )
     confidence: float = Field(
@@ -28,6 +28,9 @@ associative_recall_system_template = """将**当前情况**与**历史记忆**�
 
 【相关的历史记忆】
 {{episodic_memories}}
+{% if query_too_many_results %}
+**注意: 记忆查询结果过多，已过滤部分信息，当前查询结果不完整**
+{% endif %}
 
 【你正在做的事】
 {{active_goals}}"""
@@ -73,6 +76,7 @@ def associative_recall_task_format_inputs(inputs):
         "episodic_memories": default_extract_strings(
             inputs.get("episodic_memories", []), "content"
         ),
+        "query_too_many_results": inputs.get("query_too_many_results", False),
         "active_goals": default_extract_strings(
             inputs.get("active_goals", []), "description"
         ),

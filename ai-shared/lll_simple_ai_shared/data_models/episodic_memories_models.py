@@ -11,7 +11,7 @@ class EpisodicMemoriesGenerateModels(BaseModel):
         description="唯一标识符",
     )
     content: str = Field(
-        ...,
+        default="",
         description="用一句话清晰概括记忆的核心内容，要简洁具体",
     )
     importance: int = Field(default=0, description="当前记忆的重要程度分数(0-100)")
