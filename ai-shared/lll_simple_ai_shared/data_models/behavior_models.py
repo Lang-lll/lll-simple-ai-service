@@ -1,7 +1,12 @@
 from pydantic import BaseModel, Field
 from typing import List, Literal, Union, Any
 from ..utils.prompt_template import PromptTemplate
-from ..utils.extract import extract_events_string, default_extract_strings
+from ..utils.extract import (
+    extract_events_string,
+    default_extract_strings,
+    default_extract_fields_to_string,
+)
+from ..utils.date import datetime_to_cn_format
 
 
 class BaseAction(BaseModel):
@@ -33,6 +38,7 @@ class BehaviorPlan(BaseModel):
     )
 
 
+# TODO 应该指向上一个UnderstoodData
 behavior_system_template = """下面是当前的信息，请根据你的角色生成语音、动作行为计划：
 
 【当前情境】
@@ -41,7 +47,7 @@ behavior_system_template = """下面是当前的信息，请根据你的角色�
 【刚才的对话和事件】
 {{recent_events}}
 
-【相关的历史记忆】
+【相关的历史记忆或总结】
 {{episodic_memories}}
 
 【你正在做的事】
@@ -96,17 +102,30 @@ behavior_output_json_template = PromptTemplate(
 
 
 def behavior_task_format_inputs(inputs):
+    episodic_memories = ""
     episodic_memories_text = inputs.get("episodic_memories_text", None)
 
-    if not episodic_memories_text:
-        episodic_memories = default_extract_strings(
-            inputs.get("episodic_memories", []), "content"
+    if episodic_memories_text:
+        episodic_memories = episodic_memories_text
+    else:
+        episodic_memories = default_extract_fields_to_string(
+            data_list=inputs.get("episodic_memories", []),
+            field_configs=[
+                {
+                    "key": "timestamp",
+                    "display": "时间",
+                    "default": "未知",
+                    "processor": datetime_to_cn_format,
+                },
+                {"key": "content", "display": "内容", "default": "未知"},
+            ],
+            list_name="无",
         )
 
     return {
         "current_situation": inputs.get("current_situation", "未知"),
+        # TODO 有歧义 角色: * | 内容: *
         "recent_events": extract_events_string(inputs.get("recent_events", [])),
-        # TODO: 增加时间
         "episodic_memories": episodic_memories,
         "active_goals": default_extract_strings(
             inputs.get("active_goals", []), "description"

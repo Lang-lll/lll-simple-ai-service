@@ -1,9 +1,15 @@
 from pydantic import BaseModel, Field
 from ..utils.prompt_template import PromptTemplate
-from ..utils.extract import extract_events_string, default_extract_strings
+from ..utils.extract import (
+    extract_events_string,
+    default_extract_strings,
+    default_extract_fields_to_string,
+)
+from ..utils.date import datetime_to_cn_format
 
 
 class RecallResultsModels(BaseModel):
+    # TODO 优化提示语
     recalled_episode: str = Field(
         default="",
         description="从历史记忆中提取的与当前情况最相关的具体经验或模式",
@@ -11,10 +17,6 @@ class RecallResultsModels(BaseModel):
     current_situation: str = Field(
         default="",
         description="结合历史上下文后对当前情境的深化理解",
-    )
-    confidence: float = Field(
-        default=0.5,
-        description="对当前理解的确信程度，1.0表示完全确定，0.0表示完全不确定",
     )
 
 
@@ -53,16 +55,13 @@ associative_recall_output_json_template = PromptTemplate(
 
 - `current_situation`: 字符串。在结合历史经验和上下文后，对**当前情境的深化理解和分析**。说明历史经验如何影响对现状的理解。
 
-- `confidence`: 数字，范围0.0-1.0。表示你对当前分析和记忆召回的确信程度，1.0为完全确定，0.0表示完全不确定。
-
 # 输出示例
 ```json
 {examples}""",
     variables={
         "examples": """{
   "recalled_episode": "上周用户同样在晚上进入客厅后说'有点暗'，随后要求打开了灯光",
-  "current_situation": "用户现在再次在晚间进入客厅，结合历史行为模式，他很可能需要照明但尚未明确表达开灯指令",
-  "confidence": 0.8
+  "current_situation": "用户现在再次在晚间进入客厅，结合历史行为模式，他很可能需要照明但尚未明确表达开灯指令"
 }"""
     },
 )
@@ -73,8 +72,18 @@ def associative_recall_task_format_inputs(inputs):
         "current_situation": inputs.get("current_situation", "未知"),
         # TODO: 增加时间
         "recent_events": extract_events_string(inputs.get("recent_events", [])),
-        "episodic_memories": default_extract_strings(
-            inputs.get("episodic_memories", []), "content"
+        "episodic_memories": default_extract_fields_to_string(
+            data_list=inputs.get("episodic_memories", []),
+            field_configs=[
+                {
+                    "key": "timestamp",
+                    "display": "时间",
+                    "default": "未知",
+                    "processor": datetime_to_cn_format,
+                },
+                {"key": "content", "display": "内容", "default": "未知"},
+            ],
+            list_name="无",
         ),
         "query_too_many_results": inputs.get("query_too_many_results", False),
         "active_goals": default_extract_strings(

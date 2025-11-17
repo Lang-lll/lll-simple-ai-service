@@ -34,9 +34,10 @@ from .utils.extract import (
     extract_events_string,
     default_extract_strings,
 )
+from .utils.date import datetime_to_cn_format
 
 
-__version__ = "0.1.14"
+__version__ = "0.1.16"
 __all__ = [
     "UnderstoodData",
     "MemoryQueryPlan",
@@ -64,4 +65,5 @@ __all__ = [
     "MODALITY_TYPES",
     "extract_events_string",
     "default_extract_strings",
+    "datetime_to_cn_format",
 ]
