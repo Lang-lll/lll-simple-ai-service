@@ -33,11 +33,14 @@ from .utils.extract import (
     MODALITY_TYPES,
     extract_events_string,
     default_extract_strings,
+    modality_type_to_name,
+    event_entity_to_name,
+    understood_data_get_main_content,
 )
 from .utils.date import datetime_to_cn_format
 
 
-__version__ = "0.1.16"
+__version__ = "0.1.18"
 __all__ = [
     "UnderstoodData",
     "MemoryQueryPlan",
@@ -65,5 +68,8 @@ __all__ = [
     "MODALITY_TYPES",
     "extract_events_string",
     "default_extract_strings",
+    "modality_type_to_name",
+    "event_entity_to_name",
+    "understood_data_get_main_content",
     "datetime_to_cn_format",
 ]

@@ -1,7 +1,9 @@
 from pydantic import BaseModel, Field
 from ..utils.prompt_template import PromptTemplate
 from ..utils.extract import (
-    extract_events_string,
+    modality_type_to_name,
+    event_entity_to_name,
+    understood_data_get_main_content,
     default_extract_strings,
     default_extract_fields_to_string,
 )
@@ -9,21 +11,23 @@ from ..utils.date import datetime_to_cn_format
 
 
 class RecallResultsModels(BaseModel):
-    # TODO 优化提示语
     recalled_episode: str = Field(
         default="",
-        description="从历史记忆中提取的与当前情况最相关的具体经验或模式",
+        description="针对当前主要事件，从历史记忆中找出与主要事件相关的经验或模式。应该具体描述相关记忆，不要过度总结",
     )
     current_situation: str = Field(
         default="",
-        description="结合历史上下文后对当前情境的深化理解",
+        description="在结合历史经验和上下文后，对**当前情境的深化理解和分析**。说明历史经验如何影响对现状的理解",
     )
 
 
-associative_recall_system_template = """将**当前情况**与**历史记忆**进行智能关联，找出有用的经验和模式，更好地理解现状。
+associative_recall_system_template = """关注**当前主要事件**，将**当前情境**、**刚才的对话和事件**与**历史记忆**进行智能关联，找出有用的经验和模式，更好地理解主要事件。
 
 【当前情境】
 {{current_situation}}
+
+【当前主要事件】
+{{main_events}}
 
 【刚才的对话和事件】
 {{recent_events}}
@@ -51,7 +55,7 @@ associative_recall_output_json_template = PromptTemplate(
 # 输出要求
 你必须输出一个JSON对象，包含以下字段：
 
-- `recalled_episode`: 字符串。从历史记忆中提取的与当前情况**最相关**的具体经验、事件或行为模式。请描述具体的记忆内容。
+- `recalled_episode`: 字符串。针对当前主要事件，从历史记忆中找出与主要事件相关的经验或模式。应该具体描述相关记忆，不要过度总结。
 
 - `current_situation`: 字符串。在结合历史经验和上下文后，对**当前情境的深化理解和分析**。说明历史经验如何影响对现状的理解。
 
@@ -70,8 +74,32 @@ associative_recall_output_json_template = PromptTemplate(
 def associative_recall_task_format_inputs(inputs):
     return {
         "current_situation": inputs.get("current_situation", "未知"),
-        # TODO: 增加时间
-        "recent_events": extract_events_string(inputs.get("recent_events", [])),
+        "main_events": inputs.get("main_events", "无"),
+        "recent_events": default_extract_fields_to_string(
+            data_list=inputs.get("recent_events", []),
+            field_configs=[
+                {
+                    "key": "modality_type",
+                    "display": "类型",
+                    "default": "未知",
+                    "processor": modality_type_to_name,
+                },
+                {
+                    "key": "understood_data",
+                    "display": "来源",
+                    "default": "未知",
+                    "processor": event_entity_to_name,
+                },
+                {
+                    "key": "understood_data",
+                    "display": "内容",
+                    "default": "未知",
+                    "processor": understood_data_get_main_content,
+                },
+            ],
+            list_name="无",
+        ),
+        # TODO: 改成 时间: 内容
         "episodic_memories": default_extract_fields_to_string(
             data_list=inputs.get("episodic_memories", []),
             field_configs=[

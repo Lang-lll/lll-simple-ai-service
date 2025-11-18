@@ -7,6 +7,35 @@ MODALITY_TYPES = {
 }
 
 
+def modality_type_to_name(type):
+    return MODALITY_TYPES.get(type, "未知")
+
+
+def event_entity_to_name(understood_data):
+    if not understood_data:
+        return "未知"
+
+    event_entity = understood_data.get("event_entity", None)
+
+    if event_entity == "me":
+        return "你"
+    elif event_entity is None:
+        return "未知"
+
+    return event_entity
+
+
+def understood_data_get_main_content(understood_data):
+    if not understood_data:
+        return "未知"
+
+    main_content = understood_data.get("main_content", None)
+    if main_content is None:
+        return "未知"
+
+    return main_content
+
+
 def safe_event_to_string(event):
     try:
         # 检查understood_data

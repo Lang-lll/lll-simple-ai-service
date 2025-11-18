@@ -2,7 +2,9 @@ from pydantic import BaseModel, Field
 from typing import List, Literal, Union, Any
 from ..utils.prompt_template import PromptTemplate
 from ..utils.extract import (
-    extract_events_string,
+    modality_type_to_name,
+    event_entity_to_name,
+    understood_data_get_main_content,
     default_extract_strings,
     default_extract_fields_to_string,
 )
@@ -38,11 +40,13 @@ class BehaviorPlan(BaseModel):
     )
 
 
-# TODO 应该指向上一个UnderstoodData
 behavior_system_template = """下面是当前的信息，请根据你的角色生成语音、动作行为计划：
 
 【当前情境】
 {{current_situation}}
+
+【当前主要事件】
+{{main_events}}
 
 【刚才的对话和事件】
 {{recent_events}}
@@ -124,8 +128,31 @@ def behavior_task_format_inputs(inputs):
 
     return {
         "current_situation": inputs.get("current_situation", "未知"),
-        # TODO 有歧义 角色: * | 内容: *
-        "recent_events": extract_events_string(inputs.get("recent_events", [])),
+        "main_events": inputs.get("main_events", "无"),
+        "recent_events": default_extract_fields_to_string(
+            data_list=inputs.get("recent_events", []),
+            field_configs=[
+                {
+                    "key": "modality_type",
+                    "display": "类型",
+                    "default": "未知",
+                    "processor": modality_type_to_name,
+                },
+                {
+                    "key": "understood_data",
+                    "display": "来源",
+                    "default": "未知",
+                    "processor": event_entity_to_name,
+                },
+                {
+                    "key": "understood_data",
+                    "display": "内容",
+                    "default": "未知",
+                    "processor": understood_data_get_main_content,
+                },
+            ],
+            list_name="无",
+        ),
         "episodic_memories": episodic_memories,
         "active_goals": default_extract_strings(
             inputs.get("active_goals", []), "description"

@@ -136,7 +136,7 @@ def extract_memories_task_format_inputs(inputs):
             else:
                 main_content = main_content.strip()
 
-            return f"ID: {event_id} | 类型: {modality_type} | 角色: {event_entity} | 内容: {main_content}"
+            return f"ID: {event_id} | 类型: {modality_type} | 来源: {event_entity} | 内容: {main_content}"
 
         except Exception as e:
             print(e)

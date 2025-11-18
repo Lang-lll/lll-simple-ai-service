@@ -24,6 +24,7 @@ class MemoryQueryPlan(BaseModel):
 """,
     )
 
+    # TODO: 关键词不准确
     query_triggers: List[str] = Field(
         default_factory=list,
         description="数组，包含字符串。用于搜索记忆的关键词列表，可以添加更多同义词、相关的联想词。**仅当query_strategy为'keyword'时有效**",
@@ -134,7 +135,7 @@ understand_output_json_template = PromptTemplate(
 
 - `query_triggers`: 数组，包含字符串。用于搜索记忆的关键词列表，可以添加更多同义词、相关的联想词。**仅当query_strategy为'keyword'时有效**
 
-- `time_range`: 数组，包含两个整数。查询时间范围[起始天数, 结束天数]，如[0, 7]表示最近7天。
+- `time_range`: 数组，包含两个整数。查询时间范围[起始天数, 结束天数]，如[0, 2]表示最近2天。
 
 - `importance_score_filter`: 整数，范围0-100。重要性分数阈值，只查询分数大于等于此值的记忆。
 
@@ -152,7 +153,7 @@ understand_output_json_template = PromptTemplate(
   "memory_query_plan": {
     "query_type": "long_term_fresh",
     "query_triggers": ["客厅", "灯光"],
-    "time_range": [0, 7],
+    "time_range": [0, 2],
     "importance_score_filter": 0
   }
 }"""
