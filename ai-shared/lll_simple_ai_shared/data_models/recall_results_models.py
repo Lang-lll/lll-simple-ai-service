@@ -99,17 +99,23 @@ def associative_recall_task_format_inputs(inputs):
             ],
             list_name="无",
         ),
-        # TODO: 改成 时间: 内容
         "episodic_memories": default_extract_fields_to_string(
             data_list=inputs.get("episodic_memories", []),
+            # TODO: 还有 | 符号要处理
             field_configs=[
                 {
                     "key": "timestamp",
                     "display": "时间",
                     "default": "未知",
                     "processor": datetime_to_cn_format,
+                    "format_template": "{value}: ",
                 },
-                {"key": "content", "display": "内容", "default": "未知"},
+                {
+                    "key": "content",
+                    "display": "内容",
+                    "default": "未知",
+                    "format_template": "{value}",
+                },
             ],
             list_name="无",
         ),

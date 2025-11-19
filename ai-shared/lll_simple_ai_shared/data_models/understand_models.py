@@ -82,6 +82,9 @@ understand_system_template = """下面是当前的信息，请根据你的角色
 【需要你理解的信息】
 [{{understand_event_type}}]{{understand_event}}
 
+【当前情境】
+{{current_situation}}
+
 【刚才的对话和事件】
 {{recent_events}}
 
@@ -133,7 +136,7 @@ understand_output_json_template = PromptTemplate(
   - `"semantic"`: 语义搜索，基于情境自动联想（**忽略query_triggers**）
   - `"keyword"`: 关键词搜索，严格使用query_triggers精确匹配
 
-- `query_triggers`: 数组，包含字符串。用于搜索记忆的关键词列表，可以添加更多同义词、相关的联想词。**仅当query_strategy为'keyword'时有效**
+- `query_triggers`: 数组，包含字符串。用于精确搜索记忆的关键词组合，可以添加更多同义词、相关的联想词。**仅当query_strategy为'keyword'时有效**
 
 - `time_range`: 数组，包含两个整数。查询时间范围[起始天数, 结束天数]，如[0, 2]表示最近2天。
 
@@ -163,6 +166,7 @@ understand_output_json_template = PromptTemplate(
 
 def understand_task_format_inputs(inputs):
     return {
+        "current_situation": inputs.get("current_situation", "未知"),
         "understand_event_type": inputs.get("understand_event", {}).get("type", "未知"),
         "understand_event": inputs.get("understand_event", {}).get("data", "无"),
         "recent_events": extract_events_string(inputs.get("recent_events", [])),

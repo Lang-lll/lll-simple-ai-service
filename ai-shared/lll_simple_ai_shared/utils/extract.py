@@ -133,6 +133,11 @@ def default_extract_fields_to_string(data_list, field_configs, list_name="无"):
             - display: 显示的名称
             - default: 默认值（可选）
             - processor: 值处理函数（可选）
+            - format_template: 字段格式化模板（可选），支持占位符：
+                {display}: 显示名称
+                {value}: 字段值
+                {key}: 原始字段名
+                默认值为 "{display}: {value}"
         list_name: 列表名称，当数据为空时返回这个值
 
     Returns:
@@ -153,6 +158,7 @@ def default_extract_fields_to_string(data_list, field_configs, list_name="无"):
             display_name = config["display"]
             default_value = config.get("default", "未知")
             processor = config.get("processor")
+            format_template = config.get("format_template", "{display}: {value}")
 
             # 获取值
             value = item.get(field_key)
@@ -170,7 +176,11 @@ def default_extract_fields_to_string(data_list, field_configs, list_name="无"):
                 except Exception:
                     value = default_value
 
-            field_pairs.append(f"{display_name}: {value}")
+            # 格式化字段显示
+            formatted_field = format_template.format(
+                display=display_name, value=value, key=field_key
+            )
+            field_pairs.append(formatted_field)
 
         if field_pairs:
             result_lines.append("- " + " | ".join(field_pairs))
