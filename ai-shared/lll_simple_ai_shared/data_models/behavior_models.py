@@ -120,10 +120,17 @@ def behavior_task_format_inputs(inputs):
                     "display": "时间",
                     "default": "未知",
                     "processor": datetime_to_cn_format,
+                    "format_template": "{value}: ",
                 },
-                {"key": "content", "display": "内容", "default": "未知"},
+                {
+                    "key": "content",
+                    "display": "内容",
+                    "default": "未知",
+                    "format_template": "{value}",
+                },
             ],
             list_name="无",
+            separator="",
         )
 
     return {

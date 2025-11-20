@@ -122,7 +122,9 @@ def default_extract_strings(data_list, field=None):
     return "- " + "\n- ".join(strings) if strings else "无"
 
 
-def default_extract_fields_to_string(data_list, field_configs, list_name="无"):
+def default_extract_fields_to_string(
+    data_list, field_configs, list_name="无", separator=" | "
+):
     """
     通用方法：从List[Dict]中提取字段并格式化为字符串
 
@@ -139,6 +141,7 @@ def default_extract_fields_to_string(data_list, field_configs, list_name="无"):
                 {key}: 原始字段名
                 默认值为 "{display}: {value}"
         list_name: 列表名称，当数据为空时返回这个值
+        separator: 字段之间的分隔符，默认为 " | "
 
     Returns:
         格式化后的字符串
@@ -183,6 +186,6 @@ def default_extract_fields_to_string(data_list, field_configs, list_name="无"):
             field_pairs.append(formatted_field)
 
         if field_pairs:
-            result_lines.append("- " + " | ".join(field_pairs))
+            result_lines.append("- " + separator.join(field_pairs))
 
     return "\n".join(result_lines) if result_lines else list_name

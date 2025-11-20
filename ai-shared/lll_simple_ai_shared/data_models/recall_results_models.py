@@ -101,7 +101,6 @@ def associative_recall_task_format_inputs(inputs):
         ),
         "episodic_memories": default_extract_fields_to_string(
             data_list=inputs.get("episodic_memories", []),
-            # TODO: 还有 | 符号要处理
             field_configs=[
                 {
                     "key": "timestamp",
@@ -118,6 +117,7 @@ def associative_recall_task_format_inputs(inputs):
                 },
             ],
             list_name="无",
+            separator="",
         ),
         "query_too_many_results": inputs.get("query_too_many_results", False),
         "active_goals": default_extract_strings(

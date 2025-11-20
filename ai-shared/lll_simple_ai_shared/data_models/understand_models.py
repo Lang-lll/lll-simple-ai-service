@@ -1,7 +1,13 @@
 from pydantic import BaseModel, Field
 from typing import Literal, List
 from ..utils.prompt_template import PromptTemplate
-from ..utils.extract import extract_events_string, default_extract_strings
+from ..utils.extract import (
+    default_extract_fields_to_string,
+    default_extract_strings,
+    modality_type_to_name,
+    event_entity_to_name,
+    understood_data_get_main_content,
+)
 
 
 class MemoryQueryPlan(BaseModel):
@@ -169,7 +175,30 @@ def understand_task_format_inputs(inputs):
         "current_situation": inputs.get("current_situation", "未知"),
         "understand_event_type": inputs.get("understand_event", {}).get("type", "未知"),
         "understand_event": inputs.get("understand_event", {}).get("data", "无"),
-        "recent_events": extract_events_string(inputs.get("recent_events", [])),
+        "recent_events": default_extract_fields_to_string(
+            data_list=inputs.get("recent_events", []),
+            field_configs=[
+                {
+                    "key": "modality_type",
+                    "display": "类型",
+                    "default": "未知",
+                    "processor": modality_type_to_name,
+                },
+                {
+                    "key": "understood_data",
+                    "display": "来源",
+                    "default": "未知",
+                    "processor": event_entity_to_name,
+                },
+                {
+                    "key": "understood_data",
+                    "display": "内容",
+                    "default": "未知",
+                    "processor": understood_data_get_main_content,
+                },
+            ],
+            list_name="无",
+        ),
         "active_goals": default_extract_strings(
             inputs.get("active_goals", []), "description"
         ),

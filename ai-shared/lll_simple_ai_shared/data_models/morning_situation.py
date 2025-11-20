@@ -68,6 +68,7 @@ def morning_situation_task_format_inputs(inputs):
                 },
             ],
             list_name="无",
+            separator="",
         ),
         "query_too_many_results": inputs.get("query_too_many_results", False),
     }
