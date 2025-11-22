@@ -36,10 +36,7 @@ associative_recall_system_template = """关注**当前主要事件**，将**当�
 {{episodic_memories}}
 {% if query_too_many_results %}
 **注意: 记忆查询结果过多，已过滤部分信息，当前查询结果不完整**
-{% endif %}
-
-【你正在做的事】
-{{active_goals}}"""
+{% endif %}"""
 
 
 associative_recall_template = f"""

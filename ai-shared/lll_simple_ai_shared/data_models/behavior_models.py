@@ -22,16 +22,21 @@ class TTSAction(BaseAction):
     speed: float = Field(default=1.0, description="语速0.5-2.0")
 
 
-# TODO: 完善类型
 class MotionAction(BaseAction):
-    type: Literal["motion"] = "motion"
-    action: Literal["move", "release"] = Field(...)
-    duration: float = Field(default=1.0, description="动作持续时间(秒)")
-    speed: float = Field(default=1.0, description="运动速度倍数")
+    type: str = "motion"
+    action_id: str = Field(..., description="动作ID，如 'walk_normal', 'happy_wave_01'")
+    intensity: float = Field(default=1.0, description="动作强度 0.0-1.0")
+    speed: float = Field(default=1.0, description="动作速度 0.5-2.0")
+
+
+class WaitAction(BaseAction):
+    type: str = "wait"
+    duration: float = Field(..., description="等待时间（秒）")
+    reason: str = Field(default="", description="等待的原因")
 
 
 class BehaviorPlan(BaseModel):
-    plan: List[Union[TTSAction]] = Field(
+    plan: List[Union[TTSAction, MotionAction, WaitAction]] = Field(
         default_factory=list, description="行为计划序列"
     )
     current_situation: str | Any = Field(
@@ -54,11 +59,8 @@ behavior_system_template = """下面是当前的信息，请根据你的角色�
 【相关的历史记忆或总结】
 {{episodic_memories}}
 
-【你正在做的事】
-{{active_goals}}
-
-【社交规范】
-{{social_norms}}"""
+【可选动作】
+{{actions}}"""
 
 
 behavior_template = f"""
@@ -77,7 +79,7 @@ behavior_output_json_template = PromptTemplate(
 - `current_situation`: 字符串。根据你制定的行为计划，更新对当前情境的认知和理解，说明为什么这样的行为序列适合当前情境。
 
 - `plan`字段是动作对象数组，每个对象必须包含：
-  - `type`: 字符串，动作类型：`"tts"`(语音)
+  - `type`: 字符串，动作类型：`"tts"`(语音)、`"motion"`(动作)、`"wait"`(等待)
 
   ## 根据type选择对应字段：
 
@@ -85,6 +87,14 @@ behavior_output_json_template = PromptTemplate(
   - `data`: 字符串，要说的具体文本
   - `emotion`: 字符串，情感类型，默认"neutral"
   - `speed`: 数字0.5-2.0，语速，默认1.0
+
+  ### 当 type = "motion" 时，包含：
+  - `action_id`: 动作ID，从动作列表中选择
+  - `speed`: 数字0.5-2.0，动作速度，默认1.0
+
+  ### 当 type = "wait" 时，包含：
+  - `duration`: 数字，等待时间（秒）
+  - `reason`: 字符串，等待的原因
 
 # 输出示例
 ```json
@@ -165,4 +175,5 @@ def behavior_task_format_inputs(inputs):
             inputs.get("active_goals", []), "description"
         ),
         "social_norms": default_extract_strings(inputs.get("social_norms", [])),
+        "actions": "无",
     }

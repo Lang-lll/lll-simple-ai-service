@@ -74,6 +74,10 @@ class UnderstoodData(BaseModel):
     importance_score: int = Field(
         default=0, description="当前事件的重要程度分数(0-100)"
     )
+    action_categorys: List[str] = Field(
+        default_factory=list,
+        description="根据当前情境需要执行的动作类型分类。从可选动作分类中选择",
+    )
     memory_query_plan: MemoryQueryPlan | None = Field(
         default=None, description="制定从长期记忆中查询相关信息的计划"
     )
@@ -94,8 +98,8 @@ understand_system_template = """下面是当前的信息，请根据你的角色
 【刚才的对话和事件】
 {{recent_events}}
 
-【你正在做的事】
-{{active_goals}}
+【可选动作分类】
+{{action_categories}}
 
 请简单总结需要你理解的多模态信息。"""
 
@@ -130,6 +134,8 @@ understand_output_json_template = PromptTemplate(
 
 - `importance_score`: 整数，范围0-100。当前事件的重要程度分数。
 
+- `action_categorys`: 数组，根据当前情境需要执行的动作类型分类。从可选动作分类中选择。
+
 - `memory_query_plan`: 对象，包含记忆查询计划的详细信息。
 
 ## memory_query_plan 子对象字段说明：
@@ -159,6 +165,7 @@ understand_output_json_template = PromptTemplate(
   "event_entity": "用户",
   "key_entities": ["客厅", "灯光", "用户"],
   "importance_score": 30,
+  "action_categorys: ["locomotion", "gestures"],
   "memory_query_plan": {
     "query_type": "long_term_fresh",
     "query_triggers": ["客厅", "灯光"],
